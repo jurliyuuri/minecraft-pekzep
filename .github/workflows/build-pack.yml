@@ -24,21 +24,10 @@ jobs:
           fi
 
       - name: Download translations from Crowdin
-        uses: crowdin/github-action@v2
-        with:
-          upload_sources: false
-          upload_translations: false
-          download_translations: true
-          skip_untranslated_strings: false
-          skip_untranslated_files: false
-          export_only_approved: false
-          push_translations: false
-          create_pull_request: false
-          token: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
-          project_id: "923393"
         env:
           CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CROWDIN_PROJECT_ID: "923393"
+        run: python3 scripts/download_crowdin.py
 
       - name: List downloaded translations
         run: find translations -type f -print | sort
