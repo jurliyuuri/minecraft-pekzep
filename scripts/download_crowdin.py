@@ -46,9 +46,14 @@ def request(method: str, path: str, body: dict | None = None) -> dict:
 
 
 def fetch_url(url: str) -> bytes:
-    req = urllib.request.Request(url, headers={"Authorization": f"Bearer {token()}"})
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        return resp.read()
+    # Crowdin artifact URLs are signed; sending the API token makes S3 return 400.
+    req = urllib.request.Request(url)
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            return resp.read()
+    except urllib.error.HTTPError as e:
+        detail = e.read().decode("utf-8", errors="replace")
+        raise SystemExit(f"download {e.code} {url.split('?', 1)[0]}: {detail}") from e
 
 
 def paginate(path: str) -> list:
