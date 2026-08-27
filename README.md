@@ -9,7 +9,7 @@ Minecraft: Java Edition **1.16.1** 向けの牌言語リソースパックです
 1. [最新の `pekzep-1.16.1.zip`](https://github.com/jurliyuuri/minecraft-pekzep/releases/latest/download/pekzep-1.16.1.zip) をダウンロードする
 2. `.minecraft/resourcepacks` に置く
 3. ゲーム内でリソースパックを有効にする
-4. 言語で **牌言 (the Ai'ren Republic)** を選ぶ
+4. 言語で **牌言 (冠国)** を選ぶ
 
 1.16.1 専用です（`pack_format`: 5）。他バージョンでは動かないか、互換警告が出ます。
 
