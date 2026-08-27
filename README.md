@@ -31,16 +31,14 @@ GitHub Actions が毎日（および手動実行で）Crowdin から訳を downl
 
 ソースの upload はしません。Crowdin 上の既存ファイルを上書きしないためです。
 
-必要な repository secrets:
+必要な repository secret:
 
 | Secret | 内容 |
 | --- | --- |
-| `CROWDIN_PERSONAL_TOKEN` | Crowdin の Personal Access Token |
-| `CROWDIN_PROJECT_ID` | プロジェクトの数値 ID（設定 → API） |
+| `CROWDIN_PERSONAL_TOKEN` | Crowdin の Personal Access Token（プロジェクト ID 923393 は `crowdin.yml` に書いてある） |
 
 ```bash
 gh secret set CROWDIN_PERSONAL_TOKEN --repo jurliyuuri/minecraft-pekzep
-gh secret set CROWDIN_PROJECT_ID --repo jurliyuuri/minecraft-pekzep
 ```
 
 `crowdin.yml` の `dest` は Crowdin 上のソースパスです。ダウンロードがファイルなしで失敗するときは、プロジェクト内の実際のパスに合わせてください。
