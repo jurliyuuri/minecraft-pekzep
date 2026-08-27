@@ -17,7 +17,7 @@ Minecraft: Java Edition **1.16.1** 向けの牌言語リソースパックです
 
 ## ローカルビルド
 
-Crowdin から落とした JSON を `translations/pz_ai.json` に置いて:
+Crowdin から落とした JSON を `translations/pz_ai.json` か `translations/<locale>/en_us.json` に置いて:
 
 ```bash
 python3 scripts/build_pack.py
@@ -41,4 +41,4 @@ GitHub Actions が毎日（および手動実行で）Crowdin から訳を downl
 gh secret set CROWDIN_PERSONAL_TOKEN --repo jurliyuuri/minecraft-pekzep
 ```
 
-`crowdin.yml` の `dest` は Crowdin 上のソースパスです。ダウンロードがファイルなしで失敗するときは、プロジェクト内の実際のパスに合わせてください。
+`crowdin.yml` の `dest` は Crowdin 上のソースパス（今は `/en_us.json`）です。ダウンロードがファイルなしで失敗するときは、プロジェクト内の実際のパスに合わせてください。

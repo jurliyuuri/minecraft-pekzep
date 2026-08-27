@@ -40,6 +40,9 @@ jobs:
           CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: List downloaded translations
+        run: find translations -type f -print | sort
+
       - name: Build pack
         run: python3 scripts/build_pack.py
 

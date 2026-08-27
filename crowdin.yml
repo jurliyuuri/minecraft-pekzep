@@ -1,6 +1,5 @@
 # Download-only. Do not upload from CI — Crowdin already holds the source.
-# If download fails with a missing-file error, set `dest` to the source path
-# as it appears in the Crowdin project (often /en_us.json).
+# Crowdin stores the file as en_us.json; exports keep that name under the locale.
 
 "project_id": "923393"
 "api_token_env": "CROWDIN_PERSONAL_TOKEN"
@@ -11,6 +10,6 @@
   {
     "source": "/source/en_us.json",
     "dest": "/en_us.json",
-    "translation": "/translations/%locale%.json"
+    "translation": "/translations/%locale%/%original_file_name%"
   }
 ]

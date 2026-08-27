@@ -34,20 +34,28 @@ def find_translation_file(explicit: Path | None) -> Path:
             raise SystemExit(f"translation file not found: {explicit}")
         return explicit
 
-    preferred = TRANSLATIONS_DIR / "pz_ai.json"
-    if preferred.is_file():
-        return preferred
+    preferred = [
+        TRANSLATIONS_DIR / "pz_ai.json",
+        TRANSLATIONS_DIR / "pz_ai" / "en_us.json",
+        TRANSLATIONS_DIR / "pz-ai" / "en_us.json",
+        TRANSLATIONS_DIR / "pz-AI" / "en_us.json",
+    ]
+    for path in preferred:
+        if path.is_file():
+            return path
 
     if TRANSLATIONS_DIR.is_dir():
         candidates = sorted(
-            p
-            for p in TRANSLATIONS_DIR.rglob("*.json")
-            if p.name != "en_us.json"
+            p for p in TRANSLATIONS_DIR.rglob("*.json") if p.is_file()
         )
         if len(candidates) == 1:
             return candidates[0]
         if candidates:
-            pz = [p for p in candidates if "pz" in p.stem.lower()]
+            pz = [
+                p
+                for p in candidates
+                if "pz" in str(p.relative_to(TRANSLATIONS_DIR)).lower()
+            ]
             if len(pz) == 1:
                 return pz[0]
             names = ", ".join(str(p.relative_to(ROOT)) for p in candidates)
@@ -57,7 +65,7 @@ def find_translation_file(explicit: Path | None) -> Path:
             )
 
     raise SystemExit(
-        "no translation file. download from Crowdin into translations/pz_ai.json"
+        "no translation file. download from Crowdin into translations/"
     )
 
 
