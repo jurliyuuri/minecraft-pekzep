@@ -1,0 +1,16 @@
+# Download-only. Do not upload from CI — Crowdin already holds the source.
+# If download fails with a missing-file error, set `dest` to the source path
+# as it appears in the Crowdin project (often /en_us.json).
+
+"project_id_env": "CROWDIN_PROJECT_ID"
+"api_token_env": "CROWDIN_PERSONAL_TOKEN"
+"base_path": "."
+"preserve_hierarchy": false
+
+"files": [
+  {
+    "source": "/source/en_us.json",
+    "dest": "/en_us.json",
+    "translation": "/translations/%locale%.json"
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "pack": {
+    "pack_format": 5,
+    "description": "牌言 (Pekzep) for Minecraft 1.16.1"
+  },
+  "language": {
+    "pz_ai": {
+      "name": "牌言",
+      "region": "the Ai'ren Republic",
+      "bidirectional": false
+    }
+  }
+}
