@@ -147,7 +147,8 @@ def remap_lang(data: dict, pua_map: dict[str, str]) -> dict:
 
 def linzi_mcmeta_text(pua_map: dict[str, str]) -> str:
     mcmeta = load_json(PACK_MCMETA)
-    mcmeta["pack"]["description"] = remap_text(LINZI_DESCRIPTION, pua_map)
+    # Description is shown before the pack is applied, so keep kanji (no PUA).
+    mcmeta["pack"]["description"] = LINZI_DESCRIPTION
     languages = mcmeta.get("language")
     if isinstance(languages, dict):
         for info in languages.values():
