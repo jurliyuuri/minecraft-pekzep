@@ -15,7 +15,10 @@ SOURCE_EN = ROOT / "source" / "en_us.json"
 PACK_MCMETA = ROOT / "pack" / "pack.mcmeta"
 TRANSLATIONS_DIR = ROOT / "translations"
 DIST_DIR = ROOT / "dist"
+DIST_FONT = DIST_DIR / "linzi_font"
 ZIP_NAME = "pekzep-1.16.1.zip"
+LINZI_ZIP_NAME = "pekzep-linzi-1.16.1.zip"
+LINZI_DESCRIPTION = "牌言・燐字 (Pekzep linzi) for Minecraft 1.16.1"
 
 PLACEHOLDER = re.compile(r"%(?:\d+\$)?[sd]|%%")
 
@@ -117,12 +120,66 @@ def write_json(path: Path, data: dict) -> None:
         f.write("\n")
 
 
-def build_zip(mcmeta_text: str, lang_code: str, lang_json: Path, dest: Path) -> None:
+def remap_chunk(text: str, pua_map: dict[str, str]) -> str:
+    return "".join(pua_map.get(ch, ch) for ch in text)
+
+
+def remap_text(text: str, pua_map: dict[str, str]) -> str:
+    out: list[str] = []
+    last = 0
+    for match in PLACEHOLDER.finditer(text):
+        out.append(remap_chunk(text[last : match.start()], pua_map))
+        out.append(match.group(0))
+        last = match.end()
+    out.append(remap_chunk(text[last:], pua_map))
+    return "".join(out)
+
+
+def remap_lang(data: dict, pua_map: dict[str, str]) -> dict:
+    remapped = {}
+    for key, value in data.items():
+        if isinstance(value, str):
+            remapped[key] = remap_text(value, pua_map)
+        else:
+            remapped[key] = value
+    return remapped
+
+
+def linzi_mcmeta_text() -> str:
+    mcmeta = load_json(PACK_MCMETA)
+    mcmeta["pack"]["description"] = LINZI_DESCRIPTION
+    return json.dumps(mcmeta, ensure_ascii=False, indent=2) + "\n"
+
+
+def linzi_font_files(font_dir: Path) -> list[tuple[Path, str]]:
+    default_json = font_dir / "default.json"
+    if not default_json.is_file():
+        raise SystemExit(
+            f"missing {default_json}; run scripts/build_linzi_font.py first"
+        )
+    files = [(default_json, "assets/minecraft/font/default.json")]
+    pngs = sorted(font_dir.glob("linzi_e*.png"))
+    if not pngs:
+        raise SystemExit(f"no linzi_e*.png in {font_dir}")
+    for png in pngs:
+        files.append((png, f"assets/minecraft/textures/font/{png.name}"))
+    return files
+
+
+def build_zip(
+    mcmeta_text: str,
+    lang_code: str,
+    lang_json: Path,
+    dest: Path,
+    extra: list[tuple[Path, str]] | None = None,
+) -> None:
     dest.parent.mkdir(parents=True, exist_ok=True)
     lang_arcname = f"assets/minecraft/lang/{lang_code}.json"
     with zipfile.ZipFile(dest, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         zf.writestr("pack.mcmeta", mcmeta_text)
         zf.write(lang_json, arcname=lang_arcname)
+        for src, arcname in extra or []:
+            zf.write(src, arcname=arcname)
 
 
 LANG_META_KEYS = ("language.name", "language.region", "language.code")
@@ -143,12 +200,24 @@ def main() -> int:
         help="Crowdin JSON (default: translations/pz_ai.json)",
     )
     parser.add_argument(
+        "--linzi",
+        action="store_true",
+        help="remap kanji to PUA and embed the linzi bitmap font",
+    )
+    parser.add_argument(
         "--output",
         type=Path,
-        default=DIST_DIR / ZIP_NAME,
-        help=f"zip path (default: dist/{ZIP_NAME})",
+        help="zip path (default: dist/pekzep-1.16.1.zip or pekzep-linzi-1.16.1.zip)",
+    )
+    parser.add_argument(
+        "--font-dir",
+        type=Path,
+        default=DIST_FONT,
+        help="directory with default.json and linzi_e*.png",
     )
     args = parser.parse_args()
+    if args.output is None:
+        args.output = DIST_DIR / (LINZI_ZIP_NAME if args.linzi else ZIP_NAME)
 
     source = load_json(SOURCE_EN)
     mcmeta = load_json(PACK_MCMETA)
@@ -161,10 +230,23 @@ def main() -> int:
     merged["language.region"] = region
     merged["language.code"] = lang_code
 
+    extra: list[tuple[Path, str]] = []
+    pua_count = 0
+    if args.linzi:
+        pua_path = args.font_dir / "pua_map.json"
+        if not pua_path.is_file():
+            raise SystemExit(
+                f"missing {pua_path}; run scripts/build_linzi_font.py first"
+            )
+        pua_map = load_json(pua_path)
+        merged = remap_lang(merged, pua_map)
+        pua_count = sum(1 for value in merged.values() if isinstance(value, str) and any("\ue000" <= ch <= "\uf8ff" for ch in value))
+        extra = linzi_font_files(args.font_dir)
+
     placeholder_warnings = warn_placeholders(source, merged)
     translated, untranslated = count_progress(source, merged)
 
-    staging = DIST_DIR / "pack"
+    staging = DIST_DIR / ("pack_linzi" if args.linzi else "pack")
     if staging.exists():
         for child in staging.rglob("*"):
             if child.is_file():
@@ -172,10 +254,13 @@ def main() -> int:
     lang_out = staging / "assets" / "minecraft" / "lang" / f"{lang_code}.json"
     write_json(lang_out, merged)
 
-    mcmeta_text = PACK_MCMETA.read_text(encoding="utf-8")
-    if not mcmeta_text.endswith("\n"):
-        mcmeta_text += "\n"
-    build_zip(mcmeta_text, lang_code, lang_out, args.output)
+    if args.linzi:
+        mcmeta_text = linzi_mcmeta_text()
+    else:
+        mcmeta_text = PACK_MCMETA.read_text(encoding="utf-8")
+        if not mcmeta_text.endswith("\n"):
+            mcmeta_text += "\n"
+    build_zip(mcmeta_text, lang_code, lang_out, args.output, extra)
 
     stats = (
         f"keys: {len(source)}\n"
@@ -183,9 +268,12 @@ def main() -> int:
         f"still English: {untranslated}\n"
         f"placeholder warnings: {placeholder_warnings}\n"
         f"source translations: {trans_path.relative_to(ROOT) if trans_path.is_relative_to(ROOT) else trans_path}\n"
+        f"linzi: {args.linzi}\n"
+        f"strings with PUA: {pua_count}\n"
         f"output: {args.output}\n"
     )
-    (DIST_DIR / "stats.txt").write_text(stats, encoding="utf-8")
+    stats_path = DIST_DIR / ("stats-linzi.txt" if args.linzi else "stats.txt")
+    stats_path.write_text(stats, encoding="utf-8")
     print(stats, end="")
     return 0
 

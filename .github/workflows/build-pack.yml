@@ -14,6 +14,10 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - name: Require Crowdin token
         env:
           CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
@@ -32,8 +36,24 @@ jobs:
       - name: List downloaded translations
         run: find translations -type f -print | sort
 
-      - name: Build pack
+      - name: Fetch lin-marn noborder glyphs
+        run: bash scripts/fetch_lin_marn.sh
+
+      - name: Collect noborder paths
+        run: |
+          mkdir -p dist
+          node scripts/collect_noborder.js vendor/lin-marn > dist/noborder.json
+
+      - name: Build linzi font atlas
+        run: |
+          python3 -m pip install -r requirements-font.txt
+          python3 scripts/build_linzi_font.py --glyphs dist/noborder.json
+
+      - name: Build kanji pack
         run: python3 scripts/build_pack.py
+
+      - name: Build linzi pack
+        run: python3 scripts/build_pack.py --linzi
 
       - name: Snapshot translations
         run: |
