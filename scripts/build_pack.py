@@ -167,6 +167,12 @@ def linzi_font_files(font_dir: Path) -> list[tuple[Path, str]]:
             f"missing {default_json}; run scripts/build_linzi_font.py first"
         )
     files = [(default_json, "assets/minecraft/font/default.json")]
+    uniform_json = font_dir / "uniform.json"
+    if not uniform_json.is_file():
+        raise SystemExit(
+            f"missing {uniform_json}; run scripts/build_linzi_font.py first"
+        )
+    files.append((uniform_json, "assets/minecraft/font/uniform.json"))
     pngs = sorted(font_dir.glob("linzi_e*.png"))
     if not pngs:
         raise SystemExit(f"no linzi_e*.png in {font_dir}")
@@ -222,7 +228,7 @@ def main() -> int:
         "--font-dir",
         type=Path,
         default=DIST_FONT,
-        help="directory with default.json and linzi_e*.png",
+        help="directory with default.json, uniform.json, and linzi_e*.png",
     )
     args = parser.parse_args()
     if args.output is None:

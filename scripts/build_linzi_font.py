@@ -123,11 +123,10 @@ def main() -> int:
             }
         )
 
-    default_json = {"providers": providers}
-    (args.out / "default.json").write_text(
-        json.dumps(default_json, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
+    font_json = json.dumps({"providers": providers}, ensure_ascii=False, indent=2) + "\n"
+    # default.json: normal font. uniform.json: Force Unicode Font.
+    (args.out / "default.json").write_text(font_json, encoding="utf-8")
+    (args.out / "uniform.json").write_text(font_json, encoding="utf-8")
     (args.out / "pua_map.json").write_text(
         json.dumps(pua_map, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
