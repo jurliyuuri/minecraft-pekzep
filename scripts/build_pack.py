@@ -145,9 +145,18 @@ def remap_lang(data: dict, pua_map: dict[str, str]) -> dict:
     return remapped
 
 
-def linzi_mcmeta_text() -> str:
+def linzi_mcmeta_text(pua_map: dict[str, str]) -> str:
     mcmeta = load_json(PACK_MCMETA)
-    mcmeta["pack"]["description"] = LINZI_DESCRIPTION
+    mcmeta["pack"]["description"] = remap_text(LINZI_DESCRIPTION, pua_map)
+    languages = mcmeta.get("language")
+    if isinstance(languages, dict):
+        for info in languages.values():
+            if not isinstance(info, dict):
+                continue
+            for key in ("name", "region"):
+                value = info.get(key)
+                if isinstance(value, str):
+                    info[key] = remap_text(value, pua_map)
     return json.dumps(mcmeta, ensure_ascii=False, indent=2) + "\n"
 
 
@@ -232,6 +241,7 @@ def main() -> int:
 
     extra: list[tuple[Path, str]] = []
     pua_count = 0
+    pua_map: dict[str, str] | None = None
     if args.linzi:
         pua_path = args.font_dir / "pua_map.json"
         if not pua_path.is_file():
@@ -255,7 +265,8 @@ def main() -> int:
     write_json(lang_out, merged)
 
     if args.linzi:
-        mcmeta_text = linzi_mcmeta_text()
+        assert pua_map is not None
+        mcmeta_text = linzi_mcmeta_text(pua_map)
     else:
         mcmeta_text = PACK_MCMETA.read_text(encoding="utf-8")
         if not mcmeta_text.endswith("\n"):
