@@ -17,8 +17,9 @@ COLS = 16
 ROWS = 16
 PAGE = COLS * ROWS
 PUA_BASE = 0xE000
-HEIGHT = 16
-ASCENT = 14
+# Source cells stay 16x16; height/ascent are the on-screen size (vanilla latin is 8/7).
+HEIGHT = 8
+ASCENT = 7
 
 
 def load_glyphs(path: Path) -> dict:
