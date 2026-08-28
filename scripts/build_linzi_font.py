@@ -45,6 +45,14 @@ def to_mc_glyph(im: Image.Image) -> Image.Image:
             luma = 0.299 * r + 0.587 * g + 0.114 * b
             alpha = int(round((a / 255.0) * (255.0 - luma)))
             dst[x, y] = (255, 255, 255, max(0, min(255, alpha)))
+    # BitmapProvider.getActualGlyphWidth scans from the right and stops at the
+    # first column with any alpha != 0. The left of the cell is never trimmed.
+    # A centered stroke like 一 (vertical bar) therefore loses only its right
+    # padding. Alpha 1 still counts for width but the font shader discards it.
+    for y in range(CELL):
+        r, g, b, a = dst[CELL - 1, y]
+        if a == 0:
+            dst[CELL - 1, y] = (255, 255, 255, 1)
     return out
 
 
