@@ -1,8 +1,6 @@
 dist/
-__pycache__/
-*.pyc
 .env
 .crowdin*
-.venv/
 vendor/
 translations/*.json
+node_modules/

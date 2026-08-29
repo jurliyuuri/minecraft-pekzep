@@ -1,0 +1,18 @@
+{
+  "name": "minecraft-pekzep",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "download": "node scripts/download_crowdin.js",
+    "collect": "node scripts/collect_noborder.js vendor/lin-marn",
+    "font": "node scripts/build_linzi_font.js",
+    "pack": "node scripts/build_pack.js",
+    "pack:linzi": "node scripts/build_linzi_font.js && node scripts/build_pack.js --linzi"
+  },
+  "dependencies": {
+    "pngjs": "^7.0.0",
+    "yazl": "^3.3.1"
+  }
+}

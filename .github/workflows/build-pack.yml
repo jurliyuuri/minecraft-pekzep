@@ -14,9 +14,13 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-node@v4
         with:
-          python-version: "3.12"
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Require Crowdin token
         env:
@@ -31,7 +35,7 @@ jobs:
         env:
           CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
           CROWDIN_PROJECT_ID: "923393"
-        run: python3 scripts/download_crowdin.py
+        run: node scripts/download_crowdin.js
 
       - name: List downloaded translations
         run: find translations -type f -print | sort
@@ -45,15 +49,13 @@ jobs:
           node scripts/collect_noborder.js vendor/lin-marn > dist/noborder.json
 
       - name: Build linzi font atlas
-        run: |
-          python3 -m pip install -r requirements-font.txt
-          python3 scripts/build_linzi_font.py --glyphs dist/noborder.json
+        run: node scripts/build_linzi_font.js --glyphs dist/noborder.json
 
       - name: Build kanji pack
-        run: python3 scripts/build_pack.py
+        run: node scripts/build_pack.js
 
       - name: Build linzi pack
-        run: python3 scripts/build_pack.py --linzi
+        run: node scripts/build_pack.js --linzi
 
       - name: Publish release if pack changed
         env:

@@ -26,8 +26,9 @@ Minecraft: Java Edition **1.16.1** 向けの牌言語リソースパックです
 訳はビルド時に Crowdin から落とします。手元では:
 
 ```bash
-CROWDIN_PERSONAL_TOKEN=… python3 scripts/download_crowdin.py
-python3 scripts/build_pack.py
+npm ci
+CROWDIN_PERSONAL_TOKEN=… node scripts/download_crowdin.js
+node scripts/build_pack.js
 ```
 
 燐字パック:
@@ -36,8 +37,8 @@ python3 scripts/build_pack.py
 bash scripts/fetch_lin_marn.sh
 mkdir -p dist
 node scripts/collect_noborder.js vendor/lin-marn > dist/noborder.json
-python3 scripts/build_linzi_font.py
-python3 scripts/build_pack.py --linzi
+node scripts/build_linzi_font.js
+node scripts/build_pack.js --linzi
 ```
 
 `font/lin-marn.sha` が使う [lin-marn](https://github.com/jurliyuuri/lin-marn) の commit です。新しい noborder を取り込むときは SHA だけ更新します。
@@ -54,7 +55,7 @@ GitHub Actions が毎日（および手動実行で）Crowdin から訳を downl
 
 | Secret | 内容 |
 | --- | --- |
-| `CROWDIN_PERSONAL_TOKEN` | Crowdin の Personal Access Token（プロジェクト ID 923393 は `scripts/download_crowdin.py` に書いてある） |
+| `CROWDIN_PERSONAL_TOKEN` | Crowdin の Personal Access Token（プロジェクト ID 923393 は `scripts/download_crowdin.js` に書いてある） |
 
 ```bash
 gh secret set CROWDIN_PERSONAL_TOKEN --repo jurliyuuri/minecraft-pekzep
