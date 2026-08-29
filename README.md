@@ -23,9 +23,10 @@ Minecraft: Java Edition **1.16.1** 向けの牌言語リソースパックです
 
 ## ローカルビルド
 
-Crowdin から落とした JSON を `translations/pz_ai.json` か `translations/<locale>/en_us.json` に置いて:
+訳はビルド時に Crowdin から落とします。手元では:
 
 ```bash
+CROWDIN_PERSONAL_TOKEN=… python3 scripts/download_crowdin.py
 python3 scripts/build_pack.py
 ```
 

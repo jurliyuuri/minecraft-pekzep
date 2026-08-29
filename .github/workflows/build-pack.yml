@@ -55,18 +55,6 @@ jobs:
       - name: Build linzi pack
         run: python3 scripts/build_pack.py --linzi
 
-      - name: Snapshot translations
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add translations
-          if git diff --cached --quiet; then
-            echo "no translation snapshot changes"
-          else
-            git commit -m "chore: snapshot Crowdin translations"
-            git push
-          fi
-
       - name: Publish release if pack changed
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

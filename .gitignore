@@ -5,3 +5,4 @@ __pycache__/
 .crowdin*
 .venv/
 vendor/
+translations/*.json
