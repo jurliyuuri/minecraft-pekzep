@@ -53,10 +53,8 @@ GitHub Actions が毎日（および手動実行で）Crowdin から訳を downl
 
 | Secret | 内容 |
 | --- | --- |
-| `CROWDIN_PERSONAL_TOKEN` | Crowdin の Personal Access Token（プロジェクト ID 923393 は `crowdin.yml` に書いてある） |
+| `CROWDIN_PERSONAL_TOKEN` | Crowdin の Personal Access Token（プロジェクト ID 923393 は `scripts/download_crowdin.py` に書いてある） |
 
 ```bash
 gh secret set CROWDIN_PERSONAL_TOKEN --repo jurliyuuri/minecraft-pekzep
 ```
-
-`crowdin.yml` の `dest` は Crowdin 上のソースパス（今は `/en_us.json`）です。ダウンロードがファイルなしで失敗するときは、プロジェクト内の実際のパスに合わせてください。

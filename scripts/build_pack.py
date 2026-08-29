@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
-"""Build a 1.16.1 language resource pack from Crowdin output + pinned en_us.json."""
+"""Build a 1.16.1 language resource pack from Crowdin translations."""
 
 from __future__ import annotations
 
 import argparse
 import json
 import re
-import sys
 import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SOURCE_EN = ROOT / "source" / "en_us.json"
 PACK_MCMETA = ROOT / "pack" / "pack.mcmeta"
 TRANSLATIONS_DIR = ROOT / "translations"
 DIST_DIR = ROOT / "dist"
@@ -84,33 +82,6 @@ def language_meta(mcmeta: dict) -> tuple[str, str, str]:
     if not name or not region:
         raise SystemExit("language name and region are required in pack.mcmeta")
     return code, name, region
-
-
-def merge(source: dict, translations: dict) -> dict:
-    merged = dict(source)
-    for key, value in translations.items():
-        if isinstance(value, str) and value != "":
-            merged[key] = value
-    return merged
-
-
-def warn_placeholders(source: dict, merged: dict) -> int:
-    warnings = 0
-    for key, src in source.items():
-        if not isinstance(src, str):
-            continue
-        dst = merged.get(key)
-        if not isinstance(dst, str) or dst == src:
-            continue
-        src_ph = PLACEHOLDER.findall(src)
-        dst_ph = PLACEHOLDER.findall(dst)
-        if src_ph != dst_ph:
-            warnings += 1
-            print(
-                f"placeholder mismatch: {key}: {src_ph} -> {dst_ph}",
-                file=sys.stderr,
-            )
-    return warnings
 
 
 def write_json(path: Path, data: dict) -> None:
@@ -198,16 +169,6 @@ def build_zip(
             zf.write(src, arcname=arcname)
 
 
-LANG_META_KEYS = ("language.name", "language.region", "language.code")
-
-
-def count_progress(source: dict, merged: dict) -> tuple[int, int]:
-    compared = [key for key in source if key not in LANG_META_KEYS]
-    untranslated = sum(1 for key in compared if merged.get(key) == source[key])
-    translated = len(compared) - untranslated
-    return translated, untranslated
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -235,13 +196,10 @@ def main() -> int:
     if args.output is None:
         args.output = DIST_DIR / (LINZI_ZIP_NAME if args.linzi else ZIP_NAME)
 
-    source = load_json(SOURCE_EN)
     mcmeta = load_json(PACK_MCMETA)
     lang_code, name, region = language_meta(mcmeta)
     trans_path = find_translation_file(args.translations)
-    translations = load_json(trans_path)
-
-    merged = merge(source, translations)
+    merged = load_json(trans_path)
     merged["language.name"] = name
     merged["language.region"] = region
     merged["language.code"] = lang_code
@@ -259,9 +217,6 @@ def main() -> int:
         merged = remap_lang(merged, pua_map)
         pua_count = sum(1 for value in merged.values() if isinstance(value, str) and any("\ue000" <= ch <= "\uf8ff" for ch in value))
         extra = linzi_font_files(args.font_dir)
-
-    placeholder_warnings = warn_placeholders(source, merged)
-    translated, untranslated = count_progress(source, merged)
 
     staging = DIST_DIR / ("pack_linzi" if args.linzi else "pack")
     if staging.exists():
@@ -281,10 +236,7 @@ def main() -> int:
     build_zip(mcmeta_text, lang_code, lang_out, args.output, extra)
 
     stats = (
-        f"keys: {len(source)}\n"
-        f"translated (value differs from en_us, excl. language.*): {translated}\n"
-        f"still English: {untranslated}\n"
-        f"placeholder warnings: {placeholder_warnings}\n"
+        f"keys: {len(merged)}\n"
         f"source translations: {trans_path.relative_to(ROOT) if trans_path.is_relative_to(ROOT) else trans_path}\n"
         f"linzi: {args.linzi}\n"
         f"strings with PUA: {pua_count}\n"
